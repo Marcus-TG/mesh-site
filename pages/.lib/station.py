@@ -33,6 +33,7 @@ PAGES = [
     ("log", "log.mu", "who's been by, and when"),
     ("lab", "lab.mu", "the homelab it runs on"),
     ("workshop", "workshop.mu", "watchmaking"),
+    ("art", "art.mu", "how the pictures are made"),
 ]
 
 

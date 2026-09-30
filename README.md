@@ -11,6 +11,7 @@ pages/
   log.mu          visitor stats: who's been by, and when
   lab.mu          the homelab it runs on
   workshop.mu     watchmaking
+  art.mu          how the pictures are made
   .lib/station.py shared sky, colours, pixel renderer and page frame
 ```
 
