@@ -172,7 +172,7 @@ def render(px):
                 out.append("`B" + bottom)
                 bg = bottom
             out.append("▀")
-        out.append("``")
+        out.append("`f`b")   # reset colors only; a full `` reset would also drop centering
         lines.append("".join(out))
     return lines
 
