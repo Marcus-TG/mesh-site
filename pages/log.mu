@@ -2,11 +2,11 @@
 
 `F9bd`_`[← sky`:/page/index.mu]`_`f
 
-`!`Fdb0s`Fdb1t`Fcb2a`Fcb4t`Fbb5i`Fbb6o`Fab7n `Fab8l`F9b9o`F9bag`f`!
+`!`Fdb0l`Fcb4o`F9bag`f`!
 
-`Fdb02026-09-29`f  first contact
- ∙ two uplinks in Canada, a relay on the homelab
- ∙ 256 nodes heard by morning
- ∙ this sky
+`Fdb02026-09-29`f
+ ∙ joined the mesh, two uplinks in Canada
+ ∙ relay node on the homelab
+ ∙ this page
 
-`F667next: a LoRa radio, so this works without the internet`f
+# Add entries at the top as you go, same format.

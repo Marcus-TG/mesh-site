@@ -203,8 +203,6 @@ def main():
     print("")
     print("  ".join([link.format("about", "about.mu"), link.format("log", "log.mu"),
                      link.format("lab", "lab.mu"), link.format("workshop", "workshop.mu")]))
-    print("")
-    print("`F667`*every visitor gets their own sky`*`f")
     print("`a")
 
 
