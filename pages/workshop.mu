@@ -1,18 +1,9 @@
 #!c=0
-`F7cf`_`[← home`:/page/index.mu]`_`f
 
->Workshop
+`F9bd`_`[← sky`:/page/index.mu]`_`f
 
-Watchmaking, from the start. Right now that means modeling parts, not building them.
+`!`Fdb0w`Fdb1o`Fcb2r`Fcb4k`Fbb5s`Fab7h`F9b8o`F9bap`f`!
 
->>Platform
-Seiko NH35: hacking seconds, bidirectional winding, and a huge aftermarket to learn
-from.
+Seiko NH35. Dials drawn in Fusion 360, not yet cut.
 
->>On the bench (in CAD)
- - A parametric dial blank in Fusion 360, measured against the movement's spec sheet
- - Each dial design is derived from the blank, so the fit stays right while the face
-   changes
-
->>Someday
-Original dials, then casebacks, then cases.
+`F667someday: original dials, then cases.`f
