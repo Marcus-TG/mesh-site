@@ -8,18 +8,18 @@ import sys
 # (name, detail lines...), top of the rack first. Drawn next to their units: three
 # detail lines fit beside the 2U units, two beside the 1U ones.
 RACK = [
-    ("service host", "Ryzen 9, 32 GB", "Docker"),
-    ("inference", "Ryzen 7, RTX 3090", "local models"),
+    ("service host", "Ryzen 9, RTX 3060, 32 GB", "Docker"),
+    ("inference", "Ryzen 7, RTX 3090, 64 GB", "local models"),
     ("storage", "Dell PowerEdge R710, 64 GB", "TrueNAS SCALE", "the boring, important one"),
     ("network", "UniFi", "VLANs, dual WAN"),
 ]
 
 COPY = """
 ## why
-Tech support at an ISP left me curious about what the network looks like underneath. The lab is where I get to look.
+I never went to school for this. Building a homelab was my education, and I built a career out of it.
 
 - running my own services instead of renting them
-- local models on my own GPU instead of cloud APIs
+- local models on my own GPUs instead of cloud APIs
 - this node: take addressing, routing and trust away, then rebuild them from keys. The most interesting way I've found to learn what they actually are.
 
 > rule of the lab: if it isn't in the repo, it doesn't exist.
