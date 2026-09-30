@@ -101,6 +101,9 @@ def main():
     print("`F%s%s  ·  %s in ontario  ·  sky no. %s`f" % (
         th.dim, st.phase_name(th.hour), now.strftime("%H:%M"), seed[:6]))
     print("")
+    print("`F%sthe sky is drawn fresh for every visit, at the time of day in ontario.`f" % th.soft)
+    print("`F%severy page does the same, in that hour's colours.`f" % th.soft)
+    print("")
     print("")
 
     # A small directory of the pages, centred as one block.

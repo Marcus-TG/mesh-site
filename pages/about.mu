@@ -19,8 +19,6 @@ Marcus. Southern Ontario.
 
 ## why a mesh node
 Reticulum has no IP addresses. Addressing, routing and trust are rebuilt from keys, which is a good way to learn what they are.
-
-> reach me: Msg Op from your client, or LXMF if you have my address
 """
 
 

@@ -21,8 +21,6 @@ I never went to school for this. Building a homelab was my education, and I buil
 - running my own services instead of renting them
 - local models on my own GPUs instead of cloud APIs
 - this node: take addressing, routing and trust away, then rebuild them from keys. The most interesting way I've found to learn what they actually are.
-
-> rule of the lab: if it isn't in the repo, it doesn't exist.
 """
 
 
