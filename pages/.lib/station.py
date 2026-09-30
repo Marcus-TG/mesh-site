@@ -4,9 +4,12 @@
 # Pages import this. It lives in a dot-directory because NomadNet serves every other
 # file under pages/ as a page. Stdlib only: pages run with an almost empty environment.
 
+import hashlib
 import math
 import os
 import re
+import struct
+import time
 from datetime import datetime, timedelta, timezone
 
 COL = 72   # width of the text column every inner page is laid out in
@@ -27,7 +30,7 @@ KEYS = [
 
 PAGES = [
     ("about", "about.mu", "who runs this node"),
-    ("log", "log.mu", "notes from building the mesh"),
+    ("log", "log.mu", "who's been by, and when"),
     ("lab", "lab.mu", "the homelab it runs on"),
     ("workshop", "workshop.mu", "watchmaking"),
 ]
@@ -309,6 +312,138 @@ def body(src, th):
     return out
 
 
+# ── visitors ─────────────────────────────────────────────────────────────────
+# Pages count themselves: one line per request, appended to a file beside NomadNet's
+# own storage. A line holds the time, the page, and short one-way hashes of the link
+# and (if the visitor chose to identify) their identity. Nothing that names anyone.
+
+VISITS = "station-visits"
+
+
+def storage_dir():
+    """NomadNet's storage folder, found the way NomadNet finds its config: the parent
+    of the pages folder (the default layout), then /etc, ~/.config, ~/."""
+    pages = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    candidates = [os.environ.get("STATION_STORAGE"), os.path.dirname(pages)]
+    try:
+        import pwd
+        home = pwd.getpwuid(os.getuid()).pw_dir
+        candidates += ["/etc/nomadnetwork/storage", home + "/.config/nomadnetwork/storage",
+                       home + "/.nomadnetwork/storage"]
+    except Exception:
+        pass
+    for d in candidates:
+        if d and os.path.isfile(os.path.join(d, "peersettings")):
+            return d
+    return None
+
+
+def _h(value):
+    return hashlib.sha256(value.encode()).hexdigest()[:10] if value else "-"
+
+
+def record(page_name):
+    """Count this request. Only real requests carry a link_id, so local runs don't count."""
+    link = os.environ.get("link_id")
+    d = storage_dir()
+    if not link or not d:
+        return
+    path = os.path.join(d, VISITS)
+    try:
+        with open(path, "a") as f:
+            f.write("%d %s %s %s\n" % (time.time(), page_name, _h(link), _h(os.environ.get("remote_identity"))))
+        if os.path.getsize(path) > 2 * 1024 * 1024:   # ~25k visits; then drop the oldest half
+            with open(path) as f:
+                lines = f.readlines()
+            with open(path, "w") as f:
+                f.writelines(lines[len(lines) // 2:])
+    except OSError:
+        pass
+
+
+def visits():
+    """[(unix time, page, link hash, identity hash or '-')], oldest first."""
+    d = storage_dir()
+    out = []
+    try:
+        with open(os.path.join(d, VISITS)) as f:
+            for line in f:
+                parts = line.split()
+                if len(parts) == 4:
+                    out.append((int(parts[0]), parts[1], parts[2], parts[3]))
+    except (OSError, TypeError, ValueError):
+        pass
+    return out
+
+
+def _unpack(b, i=0):
+    """Just enough msgpack to read NomadNet's peersettings (stdlib only, so no library)."""
+    t = b[i]
+    if t <= 0x7f: return t, i + 1
+    if t >= 0xe0: return t - 0x100, i + 1
+    if 0x80 <= t <= 0x8f: return _map(b, i + 1, t & 0x0f)
+    if 0x90 <= t <= 0x9f: return _arr(b, i + 1, t & 0x0f)
+    if 0xa0 <= t <= 0xbf: n = t & 0x1f; return b[i + 1:i + 1 + n].decode("utf-8", "replace"), i + 1 + n
+    if t == 0xc0: return None, i + 1
+    if t == 0xc2: return False, i + 1
+    if t == 0xc3: return True, i + 1
+    fixed = {0xca: ">f", 0xcb: ">d", 0xcc: ">B", 0xcd: ">H", 0xce: ">I", 0xcf: ">Q",
+             0xd0: ">b", 0xd1: ">h", 0xd2: ">i", 0xd3: ">q"}
+    if t in fixed:
+        n = struct.calcsize(fixed[t])
+        return struct.unpack(fixed[t], b[i + 1:i + 1 + n])[0], i + 1 + n
+    sized = {0xc4: (">B", False), 0xc5: (">H", False), 0xc6: (">I", False),
+             0xd9: (">B", True), 0xda: (">H", True), 0xdb: (">I", True)}
+    if t in sized:
+        fmt, text = sized[t]
+        k = struct.calcsize(fmt)
+        n = struct.unpack(fmt, b[i + 1:i + 1 + k])[0]
+        raw = b[i + 1 + k:i + 1 + k + n]
+        return (raw.decode("utf-8", "replace") if text else raw), i + 1 + k + n
+    if t in (0xdc, 0xdd, 0xde, 0xdf):
+        fmt = ">H" if t in (0xdc, 0xde) else ">I"
+        k = struct.calcsize(fmt)
+        n = struct.unpack(fmt, b[i + 1:i + 1 + k])[0]
+        return (_arr if t in (0xdc, 0xdd) else _map)(b, i + 1 + k, n)
+    raise ValueError("msgpack type %x" % t)
+
+
+def _map(b, i, n):
+    out = {}
+    for _ in range(n):
+        k, i = _unpack(b, i)
+        v, i = _unpack(b, i)
+        out[k] = v
+    return out, i
+
+
+def _arr(b, i, n):
+    out = []
+    for _ in range(n):
+        v, i = _unpack(b, i)
+        out.append(v)
+    return out, i
+
+
+def node_stats():
+    """NomadNet's own running totals (links, pages served, last announce), or {}."""
+    try:
+        with open(os.path.join(storage_dir(), "peersettings"), "rb") as f:
+            data, _ = _unpack(f.read())
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def ago(seconds):
+    seconds = max(0, int(seconds))
+    for size, unit in ((86400, "day"), (3600, "hour"), (60, "min")):
+        if seconds >= size:
+            n = seconds // size
+            return "%d %s%s ago" % (n, unit, "s" if n > 1 and unit != "min" else "")
+    return "just now"
+
+
 # ── page frame ───────────────────────────────────────────────────────────────
 
 def nav(th, current=None):
@@ -323,7 +458,9 @@ def nav(th, current=None):
 
 def page(name, copy, art=None, subtitle=None):
     """Print an inner page: header line, art, pixel title, copy, footer nav.
-    `art` is a function (theme, now) -> list of micron lines, each COL wide or less."""
+    `art` is a function (theme, now) -> list of micron lines, each COL wide or less.
+    `copy` is body markup, or a function (theme, now) returning it."""
+    record(name)
     now = ontario_now()
     th = Theme(hour_of(now))
 
@@ -347,6 +484,8 @@ def page(name, copy, art=None, subtitle=None):
         lines.append(fill("`F%s%s`f" % (th.soft, subtitle)))
     lines.append("")
 
+    if callable(copy):   # copy built per request, after this visit is counted
+        copy = copy(th, now)
     lines += [fill(l) for l in body(copy, th)]
 
     lines.append("")

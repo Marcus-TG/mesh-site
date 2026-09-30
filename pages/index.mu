@@ -82,6 +82,7 @@ def draw(st, rng, hour):
 
 def main():
     import station as st
+    st.record("index")
     seed = os.environ.get("link_id") or "%032x" % random.getrandbits(128)
     rng = random.Random(seed)
     now = st.ontario_now()

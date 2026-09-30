@@ -8,7 +8,7 @@ encrypted, IP-free network, written in micron (NomadNet's terminal markup).
 pages/
   index.mu        home: a lake horizon, drawn fresh per visit
   about.mu        who runs this node
-  log.mu          station log: notes from building the mesh setup
+  log.mu          visitor stats: who's been by, and when
   lab.mu          the homelab it runs on
   workshop.mu     watchmaking
   .lib/station.py shared sky, colours, pixel renderer and page frame
@@ -23,6 +23,13 @@ To change a page's words, edit the `COPY` block at the top of its file. That blo
 uses a small markup: `## label` for a section, `### label` for a log entry heading,
 `- ` for a bullet, `> ` for a dim note. Blank lines are kept. New pages need
 `chmod +x`, and NomadNet shows them within a minute.
+
+Every page counts its own visits by appending a line to `station-visits` in
+NomadNet's storage folder, next to its `peersettings`. Each line holds the time, the
+page name, and short one-way hashes of the connection and (only if the visitor
+identified) their identity. The log page draws these and reads NomadNet's own
+totals from `peersettings`. Only real requests count, because only they carry a
+`link_id`, so running a page from the terminal doesn't add a visit.
 
 `station.py` sits in a dot-directory because NomadNet serves every other file under
 `pages/` as a page. If it's ever missing, each page falls back to plain text.
