@@ -45,7 +45,7 @@ def draw(st, rng, hour):
         for y in range(HORIZON - heights[x], HORIZON):
             px[y][x] = silhouette
             if dark and heights[x] > 1 and rng.random() < 0.12:
-                px[y][x] = rng.choice([(255, 210, 120), (255, 190, 90), (200, 220, 255)])
+                px[y][x] = rng.choice([(255, 210, 120), (255, 190, 90), (220, 150, 70)])
     for y in range(HORIZON - s(12), HORIZON):
         px[y][tower] = silhouette
     for y in range(HORIZON - s(7), HORIZON - s(5)):

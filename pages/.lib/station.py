@@ -101,17 +101,23 @@ def sky(rng, hour, w, horizon, scale=1.0):
             row.append((base[0] + n, base[1] + n, base[2] + n))
         px.append(row)
 
-    if is_dark(hour):
-        for _ in range(int(w * horizon / 43)):
-            x, y = rng.randrange(w), rng.randrange(max(1, horizon - round(4 * scale)))
-            b = rng.choice([150, 190, 230, 255])
-            px[y][x] = (b, b, min(255, b + 20))
-
     t, body, glow, is_sun = celestial(hour)
     radius = (2.2 if is_sun else 1.7) * scale
     margin = 6 * scale
     cx = margin + t * (w - 2 * margin)
     cy = horizon - 2 * scale - math.sin(t * math.pi) * (horizon - 6 * scale)
+
+    # Stars: mostly faint, blended into the sky, an occasional bright one, thinning
+    # toward the horizon and kept out of the moon's glow so the moon stays brightest.
+    if is_dark(hour):
+        top = max(1, horizon - round(4 * scale))
+        for _ in range(int(w * horizon / 55)):
+            x, y = rng.randrange(w), int(rng.random() ** 1.4 * top)
+            if math.hypot((x - cx) * 0.5, y - cy) <= radius * 3.6:
+                continue
+            k = 0.78 if rng.random() < 0.1 else rng.uniform(0.3, 0.55)
+            k *= 1 - 0.55 * y / top
+            px[y][x] = lerp(px[y][x], (205, 210, 235), k)
     for y in range(horizon):
         for x in range(w):
             d = math.hypot((x - cx) * 0.5, y - cy)
